@@ -1,0 +1,165 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String       @id @default(auto()) @map("_id") @db.ObjectId
+  firstName    String
+  lastName     String
+  email        String       @unique
+  password     String
+  position     PositionEnum?
+  role         UserRoleEnum @default(USER)
+  status       UserStatus   @default(ACTIVATE)
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+  profile      Profile?
+  otp          String?
+
+  @@map("users")
+}
+
+model Profile {
+  id               String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId           String   @unique @db.ObjectId
+  bio              String?
+  age              Int?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id])
+}
+
+model Gpu {
+  id                           String             @id @default(auto()) @map("_id") @db.ObjectId
+  name                         String
+  image                        String
+  benchmarkAndSpecsDescription String
+  additionalData              Json
+  gpu                         Json
+  memory                      Json
+  clockSpeeds                 Json
+  thermalDesign               Json
+  coolerAndFans               Json?
+  connectivity                Json?
+  featureSet                  Json?
+  videoCodecs                 Json?
+  dimensions                  Json?
+  rating                      Float?
+  buyingLink                  String?
+  createdAt                   DateTime           @default(now())
+  updatedAt                   DateTime           @updatedAt
+  benchmarkScores             GpuBenchmarkScore[]
+
+  @@map("gpus")
+}
+
+model Cpu {
+  id                           String           @id @default(auto()) @map("_id") @db.ObjectId
+  name                         String
+  image                        String
+  description                  String
+  family                       String
+  cpuGroup                     String
+  architecture                 String
+  technology                   String
+  segment                      String
+  generation                   String
+  cpuCoresAndBaseFrequency     Json
+  memory                       Json
+  thermalManagement            Json
+  rating                       Float?
+  buyingLink                   String?
+  createdAt                    DateTime         @default(now())
+  updatedAt                    DateTime         @updatedAt
+  benchmarkScores              BenchmarkScore[]
+
+  @@map("cpus")
+}
+
+model GpuBenchmark {
+  id                String             @id @default(auto()) @map("_id") @db.ObjectId
+  name              String
+  description       String
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+  gpuSubBenchmarks  GpuSubBenchmark[]
+
+  @@map("gpu_benchmarks")
+}
+
+model GpuSubBenchmark {
+  id                String             @id @default(auto()) @map("_id") @db.ObjectId
+  name              String
+  description       String?
+  gpuBenchmarkId    String             @db.ObjectId
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+  gpuBenchmark      GpuBenchmark       @relation(fields: [gpuBenchmarkId], references: [id])
+  benchmarkScores   GpuBenchmarkScore[]
+
+  @@map("gpu_sub_benchmarks")
+}
+
+model GpuBenchmarkScore {
+  id                String           @id @default(auto()) @map("_id") @db.ObjectId
+  gpuId             String           @db.ObjectId
+  gpuSubBenchmarkId String           @db.ObjectId
+  score             Float
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
+  gpu               Gpu              @relation(fields: [gpuId], references: [id])
+  gpuSubBenchmark   GpuSubBenchmark  @relation(fields: [gpuSubBenchmarkId], references: [id])
+
+  @@map("gpu_benchmark_scores")
+}
+
+model Benchmark {
+  id                String           @id @default(auto()) @map("_id") @db.ObjectId
+  name              String
+  description       String
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
+  benchmarkScores   BenchmarkScore[]
+
+  @@map("benchmarks")
+}
+
+model BenchmarkScore {
+  id            String     @id @default(auto()) @map("_id") @db.ObjectId
+  benchmarkId   String     @db.ObjectId
+  cpuId         String     @db.ObjectId
+  score         Float
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+  benchmark     Benchmark  @relation(fields: [benchmarkId], references: [id])
+  cpu           Cpu        @relation(fields: [cpuId], references: [id])
+
+  @@map("benchmark_scores")
+}
+
+enum UserRoleEnum {
+  USER
+  ADMIN
+  SUPERADMIN
+}
+
+enum UserStatus {
+  ACTIVATE
+  INACTIVATE
+  BLOCKED
+}
+
+enum PositionEnum {
+  SUBSONTRUCTOR
+  EMPLOYEE
+  MANAGER
+}
