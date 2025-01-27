@@ -52,3 +52,13 @@ export interface IApiResponse<T> {
 }
 
 export type IGpuType = Omit<Gpu, "createdAt" | "updatedAt">;
+
+export interface IGpuBenchmarkScore {
+  gpuSubBenchmarkId: string;
+  score: number;
+}
+
+export interface ISetGpuBenchmarkScores {
+  gpuId: string;
+  scores: IGpuBenchmarkScore[];
+}

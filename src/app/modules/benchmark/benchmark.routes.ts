@@ -6,7 +6,7 @@ import auth from "../../middlewares/auth";
 
 const router = express.Router();
 
-// GPU Benchmark Routes
+// GPU Benchmark Routes - create benchmark,get all benchmarks, get benchmark by id
 router.post(
   "/gpu-benchmarks",
   auth("ADMIN"),
@@ -17,7 +17,7 @@ router.post(
 router.get("/gpu-benchmarks", BenchmarkController.getAllGpuBenchmarks);
 router.get("/gpu-benchmarks/:id", BenchmarkController.getGpuBenchmarkById);
 
-// GPU Sub-Benchmark Routes
+// GPU Sub-Benchmark Routes - create sub-benchmark,get all sub-benchmarks, get sub-benchmark by id
 router.post(
   "/gpu-sub-benchmarks",
   auth("ADMIN"),

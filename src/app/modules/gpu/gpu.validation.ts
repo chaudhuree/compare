@@ -109,7 +109,23 @@ const updateGpu = z.object({
   body: createGpu.shape.body.partial(),
 });
 
+const setBenchmarkScores = z.object({
+  body: z.object({
+    scores: z.array(
+      z.object({
+        gpuSubBenchmarkId: z.string({
+          required_error: "GPU Sub Benchmark ID is required",
+        }),
+        score: z.number({
+          required_error: "Score is required",
+        }),
+      })
+    ),
+  }),
+});
+
 export const GpuValidation = {
   createGpu,
   updateGpu,
+  setBenchmarkScores,
 };

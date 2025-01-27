@@ -4,6 +4,7 @@ import validateRequest from "../../middlewares/validateRequest";
 import { GpuValidation } from "./gpu.validation";
 import auth from "../../middlewares/auth";
 
+
 const router = express.Router();
 
 router.post(
@@ -23,6 +24,17 @@ router.patch(
   GpuController.updateGpu
 );
 
-router.delete("/:id", auth("ADMIN"), GpuController.deleteGpu);
+router.delete(
+  "/:id",
+  auth("ADMIN"),
+  GpuController.deleteGpu
+);
+
+router.post(
+  "/:id/benchmark-scores",
+  auth(),
+  validateRequest(GpuValidation.setBenchmarkScores),
+  GpuController.setBenchmarkScores
+);
 
 export const GpuRoutes = router;

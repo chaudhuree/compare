@@ -119,6 +119,7 @@ model GpuBenchmarkScore {
   gpu               Gpu              @relation(fields: [gpuId], references: [id])
   gpuSubBenchmark   GpuSubBenchmark  @relation(fields: [gpuSubBenchmarkId], references: [id])
 
+  @@unique([gpuId, gpuSubBenchmarkId])
   @@map("gpu_benchmark_scores")
 }
 

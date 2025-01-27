@@ -80,10 +80,27 @@ const deleteGpu = catchAsync(async (req: Request, res: Response) => {
   res.status(httpStatus.OK).json(response);
 });
 
+const setBenchmarkScores = catchAsync(async (req: Request, res: Response) => {
+  const { scores } = req.body;
+  const gpuId = req.params.id;
+
+  const result = await GpuService.setBenchmarkScores(gpuId, scores);
+
+  const response: IApiResponse<any> = {
+    success: true,
+    statusCode: httpStatus.OK,
+    message: "GPU benchmark scores set successfully",
+    data: result,
+  };
+
+  res.status(httpStatus.OK).json(response);
+});
+
 export const GpuController = {
   createGpu,
   getAllGpus,
   getGpuById,
   updateGpu,
   deleteGpu,
+  setBenchmarkScores,
 };
