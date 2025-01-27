@@ -1,6 +1,6 @@
 import { Prisma, PrismaClient } from "@prisma/client";
 import prisma from "../../utils/prisma";
-import { IGpu, IGpuResponse } from "./gpu.interface";
+import { IGpu, IGpuResponse, IGpuComparison, IGpuWithBenchmarks, IGpuWithSimplifiedBenchmarks, ISimplifiedBenchmark } from "./gpu.interface";
 
 const createGpu = async (payload: IGpu): Promise<any> => {
   const result = await prisma.gpu.create({
@@ -226,6 +226,80 @@ const setBenchmarkScores = async (gpuId: string, scores: { gpuSubBenchmarkId: st
   return updatedGpu;
 };
 
+const compareGpus = async (firstGpuId: string, secondGpuId: string): Promise<IGpuComparison> => {
+  // Fetch both GPUs with their benchmark scores
+  const [firstGpu, secondGpu] = await Promise.all([
+    prisma.gpu.findUnique({
+      where: { id: firstGpuId },
+      include: {
+        benchmarkScores: {
+          include: {
+            gpuSubBenchmark: {
+              include: {
+                gpuBenchmark: true,
+              },
+            },
+          },
+        },
+      },
+    }),
+    prisma.gpu.findUnique({
+      where: { id: secondGpuId },
+      include: {
+        benchmarkScores: {
+          include: {
+            gpuSubBenchmark: {
+              include: {
+                gpuBenchmark: true,
+              },
+            },
+          },
+        },
+      },
+    }),
+  ]);
+
+  if (!firstGpu || !secondGpu) {
+    throw new Error("One or both GPUs not found");
+  }
+
+  const transformGpuData = (gpu: typeof firstGpu): IGpuWithSimplifiedBenchmarks => {
+    // Group benchmark scores by benchmark name
+    const benchmarkGroups = gpu.benchmarkScores.reduce((groups, score) => {
+      const benchmarkName = score.gpuSubBenchmark.gpuBenchmark.name;
+      if (!groups[benchmarkName]) {
+        groups[benchmarkName] = [];
+      }
+      groups[benchmarkName].push({
+        name: score.gpuSubBenchmark.name,
+        score: score.score,
+      });
+      return groups;
+    }, {} as Record<string, { name: string; score: number }[]>);
+
+    // Convert groups to array format
+    const simplifiedBenchmarks: ISimplifiedBenchmark[] = Object.entries(benchmarkGroups).map(
+      ([benchmarkName, subBenchmarks]) => ({
+        benchmarkName,
+        subBenchmarks,
+      })
+    );
+
+    // Remove createdAt and updatedAt from GPU data
+    const { createdAt, updatedAt, ...gpuData } = gpu;
+
+    return {
+      ...gpuData,
+      benchmarkScores: simplifiedBenchmarks,
+    };
+  };
+
+  return {
+    firstGpu: transformGpuData(firstGpu),
+    secondGpu: transformGpuData(secondGpu),
+  };
+};
+
 export const GpuService = {
   createGpu,
   getAllGpus,
@@ -233,4 +307,5 @@ export const GpuService = {
   updateGpu,
   deleteGpu,
   setBenchmarkScores,
+  compareGpus,
 };

@@ -124,8 +124,20 @@ const setBenchmarkScores = z.object({
   }),
 });
 
+const compareGpusZodSchema = z.object({
+  body: z.object({
+    firstGpuId: z.string({
+      required_error: "First GPU ID is required",
+    }),
+    secondGpuId: z.string({
+      required_error: "Second GPU ID is required",
+    }),
+  }),
+});
+
 export const GpuValidation = {
   createGpu,
   updateGpu,
   setBenchmarkScores,
+  compareGpusZodSchema,
 };

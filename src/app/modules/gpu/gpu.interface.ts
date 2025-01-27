@@ -62,3 +62,33 @@ export interface ISetGpuBenchmarkScores {
   gpuId: string;
   scores: IGpuBenchmarkScore[];
 }
+
+import { IGpuBenchmarkScoreResponse } from "../benchmark/benchmark.interface";
+
+export interface IGpuWithBenchmarks extends Gpu {
+  benchmarkScores: IGpuBenchmarkScoreResponse[];
+}
+
+export interface ISimplifiedSubBenchmark {
+  name: string;
+  score: number;
+}
+
+export interface ISimplifiedBenchmark {
+  benchmarkName: string;
+  subBenchmarks: ISimplifiedSubBenchmark[];
+}
+
+export interface IGpuWithSimplifiedBenchmarks extends Omit<Gpu, 'createdAt' | 'updatedAt'> {
+  benchmarkScores: ISimplifiedBenchmark[];
+}
+
+export interface IGpuComparison {
+  firstGpu: IGpuWithSimplifiedBenchmarks;
+  secondGpu: IGpuWithSimplifiedBenchmarks;
+}
+
+export interface IGpuCompareRequest {
+  firstGpuId: string;
+  secondGpuId: string;
+}

@@ -96,6 +96,20 @@ const setBenchmarkScores = catchAsync(async (req: Request, res: Response) => {
   res.status(httpStatus.OK).json(response);
 });
 
+const compareGpus = catchAsync(async (req: Request, res: Response) => {
+  const { firstGpuId, secondGpuId } = req.body;
+  const result = await GpuService.compareGpus(firstGpuId, secondGpuId);
+
+  const response: IApiResponse<any> = {
+    success: true,
+    statusCode: httpStatus.OK,
+    message: "GPUs compared successfully",
+    data: result,
+  };
+
+  res.status(httpStatus.OK).json(response);
+});
+
 export const GpuController = {
   createGpu,
   getAllGpus,
@@ -103,4 +117,5 @@ export const GpuController = {
   updateGpu,
   deleteGpu,
   setBenchmarkScores,
+  compareGpus,
 };

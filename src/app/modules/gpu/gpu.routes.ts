@@ -37,4 +37,11 @@ router.post(
   GpuController.setBenchmarkScores
 );
 
+// Compare GPUs
+router.post(
+  "/compare",
+  validateRequest(GpuValidation.compareGpusZodSchema),
+  GpuController.compareGpus
+);
+
 export const GpuRoutes = router;
