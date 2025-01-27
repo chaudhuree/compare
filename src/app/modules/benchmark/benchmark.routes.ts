@@ -6,7 +6,7 @@ import auth from "../../middlewares/auth";
 
 const router = express.Router();
 
-// GPU Benchmark Routes - create benchmark,get all benchmarks, get benchmark by id
+// GPU Benchmark Routes - create benchmark,get all benchmarks, get benchmark by id, update benchmark, delete benchmark
 router.post(
   "/gpu-benchmarks",
   auth("ADMIN"),
@@ -16,8 +16,19 @@ router.post(
 
 router.get("/gpu-benchmarks", BenchmarkController.getAllGpuBenchmarks);
 router.get("/gpu-benchmarks/:id", BenchmarkController.getGpuBenchmarkById);
+router.patch(
+  "/gpu-benchmarks/:id",
+  auth("ADMIN"),
+  validateRequest(BenchmarkValidation.updateGpuBenchmark),
+  BenchmarkController.updateGpuBenchmark
+);
+router.delete(
+  "/gpu-benchmarks/:id",
+  auth("ADMIN"),
+  BenchmarkController.deleteGpuBenchmark
+);
 
-// GPU Sub-Benchmark Routes - create sub-benchmark,get all sub-benchmarks, get sub-benchmark by id
+// GPU Sub-Benchmark Routes - create sub-benchmark,get all sub-benchmarks, get sub-benchmark by id, update sub-benchmark, delete sub-benchmark
 router.post(
   "/gpu-sub-benchmarks",
   auth("ADMIN"),
@@ -27,6 +38,17 @@ router.post(
 
 router.get("/gpu-sub-benchmarks", BenchmarkController.getAllGpuSubBenchmarks);
 router.get("/gpu-sub-benchmarks/:id", BenchmarkController.getGpuSubBenchmarkById);
+router.patch(
+  "/gpu-sub-benchmarks/:id",
+  auth("ADMIN"),
+  validateRequest(BenchmarkValidation.updateGpuSubBenchmark),
+  BenchmarkController.updateGpuSubBenchmark
+);
+router.delete(
+  "/gpu-sub-benchmarks/:id",
+  auth("ADMIN"),
+  BenchmarkController.deleteGpuSubBenchmark
+);
 
 // GPU Benchmark Score Routes
 router.post(
@@ -37,6 +59,12 @@ router.post(
 );
 
 router.get("/gpu-benchmark-scores/:gpuId", BenchmarkController.getGpuBenchmarkScores);
+router.patch(
+  "/gpu-benchmark-scores",
+  auth("ADMIN"),
+  validateRequest(BenchmarkValidation.updateGpuBenchmarkScore),
+  BenchmarkController.updateGpuBenchmarkScore
+);
 
 // General Benchmark Routes
 router.post(
@@ -48,6 +76,17 @@ router.post(
 
 router.get("/benchmarks", BenchmarkController.getAllBenchmarks);
 router.get("/benchmarks/:id", BenchmarkController.getBenchmarkById);
+router.patch(
+  "/benchmarks/:id",
+  auth("ADMIN"),
+  validateRequest(BenchmarkValidation.updateBenchmark),
+  BenchmarkController.updateBenchmark
+);
+router.delete(
+  "/benchmarks/:id",
+  auth("ADMIN"),
+  BenchmarkController.deleteBenchmark
+);
 
 // Benchmark Score Routes
 router.post(
@@ -58,5 +97,11 @@ router.post(
 );
 
 router.get("/benchmark-scores/:benchmarkId", BenchmarkController.getBenchmarkScores);
+router.patch(
+  "/benchmark-scores",
+  auth("ADMIN"),
+  validateRequest(BenchmarkValidation.updateBenchmarkScore),
+  BenchmarkController.updateBenchmarkScore
+);
 
 export const BenchmarkRoutes = router;

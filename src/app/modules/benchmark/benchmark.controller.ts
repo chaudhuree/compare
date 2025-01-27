@@ -46,6 +46,28 @@ const getGpuBenchmarkById = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+const updateGpuBenchmark = catchAsync(async (req: Request, res: Response) => {
+  const { id } = req.params;
+  const result = await BenchmarkService.updateGpuBenchmark(id, req.body);
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "GPU Benchmark updated successfully",
+    data: result,
+  });
+});
+
+const deleteGpuBenchmark = catchAsync(async (req: Request, res: Response) => {
+  const { id } = req.params;
+  const result = await BenchmarkService.deleteGpuBenchmark(id);
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "GPU Benchmark deleted successfully",
+    data: result,
+  });
+});
+
 // GPU Sub-Benchmark Controllers
 const createGpuSubBenchmark = catchAsync(async (req: Request, res: Response) => {
   const result = await BenchmarkService.createGpuSubBenchmark(req.body);
@@ -84,6 +106,28 @@ const getGpuSubBenchmarkById = catchAsync(async (req: Request, res: Response) =>
     statusCode: httpStatus.OK,
     success: true,
     message: "GPU Sub-Benchmark retrieved successfully",
+    data: result,
+  });
+});
+
+const updateGpuSubBenchmark = catchAsync(async (req: Request, res: Response) => {
+  const { id } = req.params;
+  const result = await BenchmarkService.updateGpuSubBenchmark(id, req.body);
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "GPU Sub-Benchmark updated successfully",
+    data: result,
+  });
+});
+
+const deleteGpuSubBenchmark = catchAsync(async (req: Request, res: Response) => {
+  const { id } = req.params;
+  const result = await BenchmarkService.deleteGpuSubBenchmark(id);
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "GPU Sub-Benchmark deleted successfully",
     data: result,
   });
 });
@@ -152,6 +196,28 @@ const getBenchmarkById = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+const updateBenchmark = catchAsync(async (req: Request, res: Response) => {
+  const { id } = req.params;
+  const result = await BenchmarkService.updateBenchmark(id, req.body);
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "Benchmark updated successfully",
+    data: result,
+  });
+});
+
+const deleteBenchmark = catchAsync(async (req: Request, res: Response) => {
+  const { id } = req.params;
+  const result = await BenchmarkService.deleteBenchmark(id);
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "Benchmark deleted successfully",
+    data: result,
+  });
+});
+
 // Benchmark Score Controllers
 const createBenchmarkScore = catchAsync(async (req: Request, res: Response) => {
   const result = await BenchmarkService.createBenchmarkScore(req.body);
@@ -174,18 +240,48 @@ const getBenchmarkScores = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+const updateGpuBenchmarkScore = catchAsync(async (req: Request, res: Response) => {
+  const { gpuId, gpuSubBenchmarkId, score } = req.body;
+  const result = await BenchmarkService.updateGpuBenchmarkScore(gpuId, gpuSubBenchmarkId, score);
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "GPU Benchmark Score updated successfully",
+    data: result,
+  });
+});
+
+const updateBenchmarkScore = catchAsync(async (req: Request, res: Response) => {
+  const { cpuId, benchmarkId, score } = req.body;
+  const result = await BenchmarkService.updateBenchmarkScore(cpuId, benchmarkId, score);
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "CPU Benchmark Score updated successfully",
+    data: result,
+  });
+});
+
 export const BenchmarkController = {
   createGpuBenchmark,
   getAllGpuBenchmarks,
   getGpuBenchmarkById,
+  updateGpuBenchmark,
+  deleteGpuBenchmark,
   createGpuSubBenchmark,
   getAllGpuSubBenchmarks,
   getGpuSubBenchmarkById,
+  updateGpuSubBenchmark,
+  deleteGpuSubBenchmark,
   createGpuBenchmarkScore,
   getGpuBenchmarkScores,
   createBenchmark,
   getAllBenchmarks,
   getBenchmarkById,
+  updateBenchmark,
+  deleteBenchmark,
   createBenchmarkScore,
   getBenchmarkScores,
+  updateGpuBenchmarkScore,
+  updateBenchmarkScore,
 };

@@ -144,6 +144,7 @@ model BenchmarkScore {
   benchmark     Benchmark  @relation(fields: [benchmarkId], references: [id])
   cpu           Cpu        @relation(fields: [cpuId], references: [id])
 
+  @@unique([cpuId, benchmarkId])
   @@map("benchmark_scores")
 }
 
