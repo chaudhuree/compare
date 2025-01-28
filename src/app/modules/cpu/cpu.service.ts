@@ -4,7 +4,22 @@ import { ICpu, ICpuResponse } from "./cpu.interface";
 
 const createCpu = async (payload: ICpu): Promise<any> => {
   const result = await prisma.cpu.create({
-    data: payload,
+    data: {
+      name: payload.name,
+      image: payload.image,
+      description: payload.description,
+      family: payload.family,
+      cpuGroup: payload.cpuGroup,
+      architecture: payload.architecture,
+      technology: payload.technology,
+      segment: payload.segment,
+      generation: payload.generation,
+      cpuCoresAndBaseFrequency: payload.cpuCoresAndBaseFrequency,
+      memory: payload.memory,
+      thermalManagement: payload.thermalManagement,
+      rating: payload.rating,
+      buyingLink: payload.buyingLink
+    },
   });
   return result;
 };
