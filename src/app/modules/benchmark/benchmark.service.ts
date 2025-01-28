@@ -170,7 +170,9 @@ const deleteGpuSubBenchmark = async (id: string): Promise<IGpuSubBenchmarkRespon
 };
 
 // GPU Benchmark Score Services
-const createGpuBenchmarkScore = async (payload: IGpuBenchmarkScore): Promise<IGpuBenchmarkScoreResponse> => {
+const createGpuBenchmarkScore = async (
+  payload: IGpuBenchmarkScore
+): Promise<IGpuBenchmarkScoreResponse> => {
   const result = await prisma.gpuBenchmarkScore.create({
     data: payload,
     include: {
@@ -182,10 +184,23 @@ const createGpuBenchmarkScore = async (payload: IGpuBenchmarkScore): Promise<IGp
       gpu: true,
     },
   });
-  return result as IGpuBenchmarkScoreResponse;
+
+  return {
+    ...result,
+    gpu: {
+      id: result.gpu.id,
+      name: result.gpu.name,
+      image: result.gpu.image,
+      description: result.gpu.benchmarkAndSpecsDescription,
+      createdAt: result.gpu.createdAt,
+      updatedAt: result.gpu.updatedAt,
+    },
+  } as IGpuBenchmarkScoreResponse;
 };
 
-const getGpuBenchmarkScores = async (gpuId: string): Promise<IGpuBenchmarkScoreResponse[]> => {
+const getGpuBenchmarkScores = async (
+  gpuId: string
+): Promise<IGpuBenchmarkScoreResponse[]> => {
   const result = await prisma.gpuBenchmarkScore.findMany({
     where: {
       gpuId,
@@ -199,7 +214,18 @@ const getGpuBenchmarkScores = async (gpuId: string): Promise<IGpuBenchmarkScoreR
       gpu: true,
     },
   });
-  return result as IGpuBenchmarkScoreResponse[];
+
+  return result.map((score) => ({
+    ...score,
+    gpu: {
+      id: score.gpu.id,
+      name: score.gpu.name,
+      image: score.gpu.image,
+      description: score.gpu.benchmarkAndSpecsDescription,
+      createdAt: score.gpu.createdAt,
+      updatedAt: score.gpu.updatedAt,
+    },
+  })) as IGpuBenchmarkScoreResponse[];
 };
 
 const updateGpuBenchmarkScore = async (
@@ -226,26 +252,48 @@ const updateGpuBenchmarkScore = async (
       gpu: true,
     },
   });
-  return result as IGpuBenchmarkScoreResponse;
+
+  return {
+    ...result,
+    gpu: {
+      id: result.gpu.id,
+      name: result.gpu.name,
+      image: result.gpu.image,
+      description: result.gpu.benchmarkAndSpecsDescription,
+      createdAt: result.gpu.createdAt,
+      updatedAt: result.gpu.updatedAt,
+    },
+  } as IGpuBenchmarkScoreResponse;
 };
 
 // General Benchmark Services
-const createBenchmark = async (payload: IBenchmark): Promise<IBenchmarkResponse> => {
+const createBenchmark = async (
+  payload: Omit<IBenchmark, 'productType'>, 
+  productType: ProductType
+): Promise<IBenchmarkResponse> => {
   const result = await prisma.benchmark.create({
-    data: payload,
-    include: {
-      benchmarkScores: true,
+    data: {
+      ...payload,
+      productType,
     },
+    include: {
+      benchmarkScores: true
+    }
   });
+
   return result as IBenchmarkResponse;
 };
 
-const getAllBenchmarks = async (): Promise<IBenchmarkResponse[]> => {
+const getAllBenchmarks = async (productType: ProductType): Promise<IBenchmarkResponse[]> => {
   const result = await prisma.benchmark.findMany({
+    where: {
+      productType,
+    },
     include: {
       benchmarkScores: true,
     },
   });
+
   return result as IBenchmarkResponse[];
 };
 
@@ -295,6 +343,25 @@ const deleteBenchmark = async (id: string): Promise<IBenchmarkResponse> => {
     },
   });
   return result as IBenchmarkResponse;
+};
+
+const getBenchmarksByProductType = async (productType: string): Promise<{ benchmarkName: string; benchmarkDescription: string; _id: string; }[]> => {
+  const benchmarks = await prisma.benchmark.findMany({
+    where: {
+      productType: productType as ProductType,
+    },
+    select: {
+      id: true,
+      name: true,
+      description: true,
+    },
+  });
+
+  return benchmarks.map((benchmark) => ({
+    benchmarkName: benchmark.name,
+    benchmarkDescription: benchmark.description,
+    _id: benchmark.id,
+  }));
 };
 
 // Benchmark Score Services
@@ -350,6 +417,89 @@ const updateBenchmarkScore = async (
   return result as IBenchmarkScoreResponse;
 };
 
+const createOrUpdateBenchmarkScore = async (
+  productId: string,
+  payload: IBenchmarkScore
+): Promise<IBenchmarkScoreResponse> => {
+  const existingScore = await prisma.benchmarkScore.findFirst({
+    where: {
+      productId,
+      benchmarkId: payload.benchmarkId,
+    },
+  });
+
+  if (existingScore) {
+    // Update existing score
+    const result = await prisma.benchmarkScore.update({
+      where: {
+        id: existingScore.id,
+      },
+      data: {
+        score: payload.score,
+      },
+      include: {
+        benchmark: true,
+      },
+    });
+    return result as IBenchmarkScoreResponse;
+  } else {
+    // Create new score
+    const result = await prisma.benchmarkScore.create({
+      data: {
+        benchmarkId: payload.benchmarkId,
+        productId,
+        productType: payload.productType,
+        score: payload.score,
+      },
+      include: {
+        benchmark: true,
+      },
+    });
+    return result as IBenchmarkScoreResponse;
+  }
+};
+
+const createOrUpdateBulkBenchmarkScores = async (
+  productId: string, 
+  productType: ProductType, 
+  scores: { benchmarkId: string; score: number }[]
+): Promise<{
+  benchmarkName: string;
+  score: number;
+}[]> => {
+  // Use transaction to ensure all operations are atomic
+  const result = await prisma.$transaction(
+    scores.map((scoreData) => 
+      prisma.benchmarkScore.upsert({
+        where: {
+          productId_benchmarkId: {
+            productId,
+            benchmarkId: scoreData.benchmarkId,
+          },
+        },
+        update: {
+          score: scoreData.score,
+        },
+        create: {
+          productId,
+          productType,
+          benchmarkId: scoreData.benchmarkId,
+          score: scoreData.score,
+        },
+        include: {
+          benchmark: true,
+        },
+      })
+    )
+  );
+
+  // Transform the result to the desired format
+  return result.map((scoreItem) => ({
+    benchmarkName: scoreItem.benchmark.name,
+    score: scoreItem.score,
+  }));
+};
+
 export const BenchmarkService = {
   // GPU Benchmark
   createGpuBenchmark,
@@ -373,8 +523,11 @@ export const BenchmarkService = {
   getBenchmarkById,
   updateBenchmark,
   deleteBenchmark,
+  getBenchmarksByProductType,
   // General Benchmark Score
   createBenchmarkScore,
   getBenchmarkScores,
   updateBenchmarkScore,
+  createOrUpdateBenchmarkScore,
+  createOrUpdateBulkBenchmarkScores,
 };

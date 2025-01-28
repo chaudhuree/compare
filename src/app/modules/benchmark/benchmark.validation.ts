@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { ProductType } from "@prisma/client";
 
-const createGpuBenchmark = z.object({
+const createGpuBenchmarkZodSchema = z.object({
   body: z.object({
     name: z.string({
       required_error: "Name is required",
@@ -12,14 +12,14 @@ const createGpuBenchmark = z.object({
   }),
 });
 
-const updateGpuBenchmark = z.object({
+const updateGpuBenchmarkZodSchema = z.object({
   body: z.object({
     name: z.string().optional(),
     description: z.string().optional(),
   }),
 });
 
-const createGpuSubBenchmark = z.object({
+const createGpuSubBenchmarkZodSchema = z.object({
   body: z.object({
     name: z.string({
       required_error: "Name is required",
@@ -33,7 +33,7 @@ const createGpuSubBenchmark = z.object({
   }),
 });
 
-const updateGpuSubBenchmark = z.object({
+const updateGpuSubBenchmarkZodSchema = z.object({
   body: z.object({
     name: z.string().optional(),
     description: z.string().optional(),
@@ -41,54 +41,7 @@ const updateGpuSubBenchmark = z.object({
   }),
 });
 
-const createGpuBenchmarkScore = z.object({
-  body: z.object({
-    gpuId: z.string(),
-    gpuSubBenchmarkId: z.string(),
-    score: z.number(),
-  }),
-});
-
-const createBenchmark = z.object({
-  body: z.object({
-    name: z.string({
-      required_error: "Name is required",
-    }),
-    description: z.string({
-      required_error: "Description is required",
-    }),
-    productType: z.nativeEnum(ProductType, {
-      required_error: "Product type is required",
-    }),
-  }),
-});
-
-const updateBenchmark = z.object({
-  body: z.object({
-    name: z.string().optional(),
-    description: z.string().optional(),
-    productType: z.nativeEnum(ProductType).optional(),
-  }),
-});
-
-const createBenchmarkScore = z.object({
-  body: z.object({
-    benchmarkId: z.string({
-      required_error: "Benchmark ID is required",
-    }),
-    productId: z.string({
-      required_error: "Product ID is required",
-    }),
-    productType: z.nativeEnum(ProductType, {
-      required_error: "Product type is required",
-    }),
-    score: z.number({
-      required_error: "Score is required",
-    }),
-  }),
-});
-
-const updateGpuBenchmarkScore = z.object({
+const createGpuBenchmarkScoreZodSchema = z.object({
   body: z.object({
     gpuId: z.string({
       required_error: "GPU ID is required",
@@ -102,32 +55,68 @@ const updateGpuBenchmarkScore = z.object({
   }),
 });
 
-const updateBenchmarkScore = z.object({
+const createBenchmarkZodSchema = z.object({
+  params: z.object({
+    productType: z.nativeEnum(ProductType),
+  }),
   body: z.object({
-    productId: z.string({
-      required_error: "Product ID is required",
+    name: z.string({
+      required_error: "Name is required",
     }),
-    productType: z.nativeEnum(ProductType, {
-      required_error: "Product type is required",
-    }),
-    benchmarkId: z.string({
-      required_error: "Benchmark ID is required",
-    }),
-    score: z.number({
-      required_error: "Score is required",
+    description: z.string({
+      required_error: "Description is required",
     }),
   }),
 });
 
+const updateBenchmarkZodSchema = z.object({
+  params: z.object({
+    productType: z.nativeEnum(ProductType),
+    id: z.string(),
+  }),
+  body: z.object({
+    name: z.string().optional(),
+    description: z.string().optional(),
+  }),
+});
+
+const getBenchmarksByProductTypeZodSchema = z.object({
+  params: z.object({
+    productType: z.nativeEnum(ProductType),
+  }),
+});
+
+const createBenchmarkScoreZodSchema = z.object({
+  params: z.object({
+    productType: z.nativeEnum(ProductType),
+    productId: z.string(),
+  }),
+  body: z.object({
+    benchmarkId: z.string(),
+    score: z.number(),
+  }),
+});
+
+const createBulkBenchmarkScoreZodSchema = z.object({
+  params: z.object({
+    productType: z.nativeEnum(ProductType),
+    productId: z.string(),
+  }),
+  body: z.array(z.object({
+    benchmarkId: z.string(),
+    score: z.number(),
+  })).min(1, { message: "At least one benchmark score is required" }),
+});
+
 export const BenchmarkValidation = {
-  createGpuBenchmark,
-  updateGpuBenchmark,
-  createGpuSubBenchmark,
-  updateGpuSubBenchmark,
-  createGpuBenchmarkScore,
-  updateGpuBenchmarkScore,
-  createBenchmark,
-  updateBenchmark,
-  createBenchmarkScore,
-  updateBenchmarkScore,
+  createGpuBenchmarkZodSchema,
+  updateGpuBenchmarkZodSchema,
+  createGpuSubBenchmarkZodSchema,
+  updateGpuSubBenchmarkZodSchema,
+  createGpuBenchmarkScoreZodSchema,
+  createBenchmarkZodSchema,
+  updateBenchmarkZodSchema,
+  getBenchmarksByProductTypeZodSchema,
+  createBenchmarkScoreZodSchema,
+  createBulkBenchmarkScoreZodSchema,
 };

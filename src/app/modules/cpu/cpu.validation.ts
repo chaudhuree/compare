@@ -128,6 +128,9 @@ const createCpu = z.object({
 });
 
 const updateCpu = z.object({
+  params: z.object({
+    id: z.string(),
+  }),
   body: createCpu.shape.body.partial(),
 });
 

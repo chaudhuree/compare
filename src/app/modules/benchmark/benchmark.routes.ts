@@ -6,44 +6,53 @@ import auth from "../../middlewares/auth";
 
 const router = express.Router();
 
-// GPU Benchmark Routes - create benchmark,get all benchmarks, get benchmark by id, update benchmark, delete benchmark
+// GPU Benchmark Routes
 router.post(
-  "/gpu-benchmarks",
+  "/gpu-benchmarks/create",
   auth("ADMIN"),
-  validateRequest(BenchmarkValidation.createGpuBenchmark),
+  validateRequest(BenchmarkValidation.createGpuBenchmarkZodSchema),
   BenchmarkController.createGpuBenchmark
 );
 
 router.get("/gpu-benchmarks", BenchmarkController.getAllGpuBenchmarks);
+
 router.get("/gpu-benchmarks/:id", BenchmarkController.getGpuBenchmarkById);
+
 router.patch(
   "/gpu-benchmarks/:id",
   auth("ADMIN"),
-  validateRequest(BenchmarkValidation.updateGpuBenchmark),
+  validateRequest(BenchmarkValidation.updateGpuBenchmarkZodSchema),
   BenchmarkController.updateGpuBenchmark
 );
+
 router.delete(
   "/gpu-benchmarks/:id",
   auth("ADMIN"),
   BenchmarkController.deleteGpuBenchmark
 );
 
-// GPU Sub-Benchmark Routes - create sub-benchmark,get all sub-benchmarks, get sub-benchmark by id, update sub-benchmark, delete sub-benchmark
+// GPU Sub-Benchmark Routes
 router.post(
-  "/gpu-sub-benchmarks",
+  "/gpu-sub-benchmarks/create",
   auth("ADMIN"),
-  validateRequest(BenchmarkValidation.createGpuSubBenchmark),
+  validateRequest(BenchmarkValidation.createGpuSubBenchmarkZodSchema),
   BenchmarkController.createGpuSubBenchmark
 );
 
 router.get("/gpu-sub-benchmarks", BenchmarkController.getAllGpuSubBenchmarks);
-router.get("/gpu-sub-benchmarks/:id", BenchmarkController.getGpuSubBenchmarkById);
+
+router.get(
+  "/gpu-sub-benchmarks/:id",
+  BenchmarkController.getGpuSubBenchmarkById
+);
+
 router.patch(
   "/gpu-sub-benchmarks/:id",
   auth("ADMIN"),
-  validateRequest(BenchmarkValidation.updateGpuSubBenchmark),
+  validateRequest(BenchmarkValidation.updateGpuSubBenchmarkZodSchema),
   BenchmarkController.updateGpuSubBenchmark
 );
+
 router.delete(
   "/gpu-sub-benchmarks/:id",
   auth("ADMIN"),
@@ -52,56 +61,58 @@ router.delete(
 
 // GPU Benchmark Score Routes
 router.post(
-  "/gpu-benchmark-scores",
+  "/gpu-benchmark-scores/create",
   auth("ADMIN"),
-  validateRequest(BenchmarkValidation.createGpuBenchmarkScore),
+  validateRequest(BenchmarkValidation.createGpuBenchmarkScoreZodSchema),
   BenchmarkController.createGpuBenchmarkScore
 );
 
 router.get("/gpu-benchmark-scores/:gpuId", BenchmarkController.getGpuBenchmarkScores);
-router.patch(
-  "/gpu-benchmark-scores",
-  auth("ADMIN"),
-  validateRequest(BenchmarkValidation.updateGpuBenchmarkScore),
-  BenchmarkController.updateGpuBenchmarkScore
+
+// General Benchmark Routes - Order matters! More specific routes first
+router.get(
+  "/:productType/list",
+  validateRequest(BenchmarkValidation.getBenchmarksByProductTypeZodSchema),
+  BenchmarkController.getBenchmarksByProductType
+);
+// add a product benchmark score
+router.post(
+  "/:productType/scores/:productId",
+  validateRequest(BenchmarkValidation.createBenchmarkScoreZodSchema),
+  BenchmarkController.createOrUpdateBenchmarkScore
 );
 
-// General Benchmark Routes
+// Bulk add or update product benchmark scores
 router.post(
-  "/benchmarks",
+  "/:productType/bulk-scores/:productId",
+  validateRequest(BenchmarkValidation.createBulkBenchmarkScoreZodSchema),
+  BenchmarkController.createOrUpdateBulkBenchmarkScores
+);
+
+router.get("/:productType/scores/:benchmarkId", BenchmarkController.getBenchmarkScores);
+
+router.post(
+  "/:productType/create",
   auth("ADMIN"),
-  validateRequest(BenchmarkValidation.createBenchmark),
+  validateRequest(BenchmarkValidation.createBenchmarkZodSchema),
   BenchmarkController.createBenchmark
 );
 
-router.get("/benchmarks", BenchmarkController.getAllBenchmarks);
-router.get("/benchmarks/:id", BenchmarkController.getBenchmarkById);
+router.get("/:productType", BenchmarkController.getAllBenchmarks);
+
+router.get("/:productType/:id", BenchmarkController.getBenchmarkById);
+
 router.patch(
-  "/benchmarks/:id",
+  "/:productType/:id",
   auth("ADMIN"),
-  validateRequest(BenchmarkValidation.updateBenchmark),
+  validateRequest(BenchmarkValidation.updateBenchmarkZodSchema),
   BenchmarkController.updateBenchmark
 );
+
 router.delete(
-  "/benchmarks/:id",
+  "/:productType/:id",
   auth("ADMIN"),
   BenchmarkController.deleteBenchmark
-);
-
-// Benchmark Score Routes
-router.post(
-  "/benchmark-scores",
-  auth("ADMIN"),
-  validateRequest(BenchmarkValidation.createBenchmarkScore),
-  BenchmarkController.createBenchmarkScore
-);
-
-router.get("/benchmark-scores/:benchmarkId", BenchmarkController.getBenchmarkScores);
-router.patch(
-  "/benchmark-scores",
-  auth("ADMIN"),
-  validateRequest(BenchmarkValidation.updateBenchmarkScore),
-  BenchmarkController.updateBenchmarkScore
 );
 
 export const BenchmarkRoutes = router;
