@@ -67,10 +67,24 @@ const deleteCpu = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+const compareCpus = catchAsync(async (req: Request, res: Response) => {
+  const { firstCpuId, secondCpuId } = req.body;
+  
+  const result = await CpuService.compareCpus(firstCpuId, secondCpuId);
+  
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "CPUs compared successfully",
+    data: result,
+  });
+});
+
 export const CpuController = {
   createCpu,
   getAllCpus,
   getCpuById,
   updateCpu,
   deleteCpu,
+  compareCpus,
 };

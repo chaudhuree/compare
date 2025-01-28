@@ -1,6 +1,6 @@
 import { Prisma, PrismaClient } from "@prisma/client";
 import prisma from "../../utils/prisma";
-import { ICpu, ICpuResponse } from "./cpu.interface";
+import { ICpu, ICpuResponse, ICpuComparison, ICpuWithSimplifiedBenchmarks, ISimplifiedCpuBenchmark } from "./cpu.interface";
 import httpStatus from "http-status";
 
 const createCpu = async (payload: ICpu): Promise<ICpuResponse> => {
@@ -179,10 +179,65 @@ const deleteCpu = async (id: string): Promise<ICpuResponse> => {
   return formattedCpu;
 };
 
+const compareCpus = async (
+  firstCpuId: string, 
+  secondCpuId: string
+): Promise<ICpuComparison> => {
+  // Fetch both CPUs with their benchmark scores
+  const [firstCpu, secondCpu] = await Promise.all([
+    prisma.cpu.findUnique({
+      where: { id: firstCpuId },
+      include: {
+        cpuBenchmarkScores: {
+          include: {
+            benchmark: true,
+          },
+        },
+      },
+    }),
+    prisma.cpu.findUnique({
+      where: { id: secondCpuId },
+      include: {
+        cpuBenchmarkScores: {
+          include: {
+            benchmark: true,
+          },
+        },
+      },
+    }),
+  ]);
+
+  if (!firstCpu || !secondCpu) {
+    throw new Error("One or both CPUs not found");
+  }
+
+  const transformCpuData = (cpu: typeof firstCpu): ICpuWithSimplifiedBenchmarks => {
+    // Transform benchmark scores to simplified format
+    const simplifiedBenchmarkScores = cpu.cpuBenchmarkScores.map(scoreItem => ({
+      benchmarkName: scoreItem.benchmark.name,
+      score: scoreItem.score
+    }));
+
+    // Remove createdAt and updatedAt from CPU data
+    const { createdAt, updatedAt, ...cpuData } = cpu;
+
+    return {
+      ...cpuData,
+      benchmarkScores: simplifiedBenchmarkScores,
+    };
+  };
+
+  return {
+    firstCpu: transformCpuData(firstCpu),
+    secondCpu: transformCpuData(secondCpu),
+  };
+};
+
 export const CpuService = {
   createCpu,
   getAllCpus,
   getCpuById,
   updateCpu,
   deleteCpu,
+  compareCpus,
 };

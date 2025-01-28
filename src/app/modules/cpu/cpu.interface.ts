@@ -27,3 +27,20 @@ export interface ICpuResponse extends Omit<Cpu, 'cpuBenchmarkScores'> {
 }
 
 export type ICpuType = Omit<Cpu, "createdAt" | "updatedAt">;
+
+// Simplified Benchmark for Comparison
+export interface ISimplifiedCpuBenchmark {
+  benchmarkName: string;
+  score: number;
+}
+
+// CPU with Simplified Benchmarks
+export interface ICpuWithSimplifiedBenchmarks extends Omit<Cpu, 'createdAt' | 'updatedAt'> {
+  benchmarkScores: ISimplifiedCpuBenchmark[];
+}
+
+// CPU Comparison Result
+export interface ICpuComparison {
+  firstCpu: ICpuWithSimplifiedBenchmarks;
+  secondCpu: ICpuWithSimplifiedBenchmarks;
+}
