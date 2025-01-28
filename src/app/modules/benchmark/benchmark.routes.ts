@@ -68,22 +68,22 @@ router.patch(
 
 // General Benchmark Routes
 router.post(
-  "/benchmarks",
+  "/add-benchmark",
   auth("ADMIN"),
   validateRequest(BenchmarkValidation.createBenchmark),
   BenchmarkController.createBenchmark
 );
 
-router.get("/benchmarks", BenchmarkController.getAllBenchmarks);
-router.get("/benchmarks/:id", BenchmarkController.getBenchmarkById);
+router.get("/allbenchmarks", BenchmarkController.getAllBenchmarks);
+router.get("/benchmark/:id", BenchmarkController.getBenchmarkById);
 router.patch(
-  "/benchmarks/:id",
+  "/benchmark/:id",
   auth("ADMIN"),
   validateRequest(BenchmarkValidation.updateBenchmark),
   BenchmarkController.updateBenchmark
 );
 router.delete(
-  "/benchmarks/:id",
+  "/benchmark/:id",
   auth("ADMIN"),
   BenchmarkController.deleteBenchmark
 );
