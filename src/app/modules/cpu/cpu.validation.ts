@@ -128,10 +128,21 @@ const createCpu = z.object({
 });
 
 const updateCpu = z.object({
+  params: z.object({
+    id: z.string(),
+  }),
   body: createCpu.shape.body.partial(),
+});
+
+const compareCpus = z.object({
+  body: z.object({
+    firstCpuId: z.string(),
+    secondCpuId: z.string(),
+  }),
 });
 
 export const CpuValidation = {
   createCpu,
   updateCpu,
+  compareCpus,
 };

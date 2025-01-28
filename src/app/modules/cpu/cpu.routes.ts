@@ -16,6 +16,12 @@ router.post(
 router.get("/", CpuController.getAllCpus);
 router.get("/:id", CpuController.getCpuById);
 
+router.post(
+  "/compare", 
+  validateRequest(CpuValidation.compareCpus),
+  CpuController.compareCpus
+);
+
 router.patch(
   "/:id",
   auth("ADMIN"),

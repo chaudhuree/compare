@@ -1,8 +1,10 @@
 import { Request, Response } from "express";
-import catchAsync from "../../utils/catchAsync";
-import { BenchmarkService } from "./benchmark.service";
-import sendResponse from "../../utils/sendResponse";
 import httpStatus from "http-status";
+import catchAsync from "../../utils/catchAsync";
+import sendResponse from "../../utils/sendResponse";
+import { BenchmarkService } from "./benchmark.service";
+import { ProductType } from "@prisma/client";
+import { ISimplifiedBenchmarkScore } from "./benchmark.interface";
 
 // GPU Benchmark Controllers
 const createGpuBenchmark = catchAsync(async (req: Request, res: Response) => {
@@ -156,9 +158,10 @@ const getGpuBenchmarkScores = catchAsync(async (req: Request, res: Response) => 
 
 // General Benchmark Controllers
 const createBenchmark = catchAsync(async (req: Request, res: Response) => {
-  const result = await BenchmarkService.createBenchmark(req.body);
+  const { productType } = req.params;
+  const result = await BenchmarkService.createBenchmark(req.body, productType as ProductType);
   sendResponse(res, {
-    statusCode: httpStatus.OK,
+    statusCode: httpStatus.CREATED,
     success: true,
     message: "Benchmark created successfully",
     data: result,
@@ -166,7 +169,8 @@ const createBenchmark = catchAsync(async (req: Request, res: Response) => {
 });
 
 const getAllBenchmarks = catchAsync(async (req: Request, res: Response) => {
-  const result = await BenchmarkService.getAllBenchmarks();
+  const { productType } = req.params;
+  const result = await BenchmarkService.getAllBenchmarks(productType as ProductType);
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,
@@ -218,13 +222,24 @@ const deleteBenchmark = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+const getBenchmarksByProductType = catchAsync(async (req: Request, res: Response) => {
+  const { productType } = req.params;
+  const result = await BenchmarkService.getBenchmarksByProductType(productType);
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "Benchmarks retrieved successfully",
+    data: result,
+  });
+});
+
 // Benchmark Score Controllers
 const createBenchmarkScore = catchAsync(async (req: Request, res: Response) => {
   const result = await BenchmarkService.createBenchmarkScore(req.body);
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,
-    message: "Benchmark Score created successfully",
+    message: "Benchmark score created successfully",
     data: result,
   });
 });
@@ -235,7 +250,23 @@ const getBenchmarkScores = catchAsync(async (req: Request, res: Response) => {
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,
-    message: "Benchmark Scores retrieved successfully",
+    message: "Benchmark scores retrieved successfully",
+    data: result,
+  });
+});
+
+const updateBenchmarkScore = catchAsync(async (req: Request, res: Response) => {
+  const { productId, productType, benchmarkId, score } = req.body;
+  const result = await BenchmarkService.updateBenchmarkScore(
+    productId,
+    productType,
+    benchmarkId,
+    score
+  );
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "Benchmark score updated successfully",
     data: result,
   });
 });
@@ -251,37 +282,65 @@ const updateGpuBenchmarkScore = catchAsync(async (req: Request, res: Response) =
   });
 });
 
-const updateBenchmarkScore = catchAsync(async (req: Request, res: Response) => {
-  const { cpuId, benchmarkId, score } = req.body;
-  const result = await BenchmarkService.updateBenchmarkScore(cpuId, benchmarkId, score);
+const createOrUpdateBenchmarkScore = catchAsync(async (req: Request, res: Response) => {
+  const { productId, productType } = req.params;
+  const result = await BenchmarkService.createOrUpdateBenchmarkScore(productId, {
+    ...req.body,
+    productId,
+    productType,
+  });
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,
-    message: "CPU Benchmark Score updated successfully",
+    message: "Benchmark score created/updated successfully",
+    data: result,
+  });
+});
+
+const createOrUpdateBulkBenchmarkScores = catchAsync(async (req: Request, res: Response) => {
+  const { productId, productType } = req.params;
+  const result = await BenchmarkService.createOrUpdateBulkBenchmarkScores(
+    productId, 
+    productType as ProductType, 
+    req.body
+  );
+  
+  sendResponse<ISimplifiedBenchmarkScore[]>(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "Benchmark scores created/updated successfully",
     data: result,
   });
 });
 
 export const BenchmarkController = {
+  // GPU Benchmark
   createGpuBenchmark,
   getAllGpuBenchmarks,
   getGpuBenchmarkById,
   updateGpuBenchmark,
   deleteGpuBenchmark,
+  // GPU Sub-Benchmark
   createGpuSubBenchmark,
   getAllGpuSubBenchmarks,
   getGpuSubBenchmarkById,
   updateGpuSubBenchmark,
   deleteGpuSubBenchmark,
+  // GPU Benchmark Score
   createGpuBenchmarkScore,
   getGpuBenchmarkScores,
+  updateGpuBenchmarkScore,
+  // General Benchmark
   createBenchmark,
   getAllBenchmarks,
   getBenchmarkById,
   updateBenchmark,
   deleteBenchmark,
+  getBenchmarksByProductType,
+  // General Benchmark Score
   createBenchmarkScore,
   getBenchmarkScores,
-  updateGpuBenchmarkScore,
   updateBenchmarkScore,
+  createOrUpdateBenchmarkScore,
+  createOrUpdateBulkBenchmarkScores,
 };
