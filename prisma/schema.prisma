@@ -80,7 +80,7 @@ model Cpu {
   buyingLink                   String?
   createdAt                    DateTime         @default(now())
   updatedAt                    DateTime         @updatedAt
-  benchmarkScores              BenchmarkScore[]
+  cpuBenchmarkScores          BenchmarkScore[] @relation("CpuBenchmarkScores")
 
   @@map("cpus")
 }
@@ -124,12 +124,13 @@ model GpuBenchmarkScore {
 }
 
 model Benchmark {
-  id                String           @id @default(auto()) @map("_id") @db.ObjectId
+  id                String                @id @default(auto()) @map("_id") @db.ObjectId
   name              String
   description       String
-  createdAt         DateTime         @default(now())
-  updatedAt         DateTime         @updatedAt
-  benchmarkScores   BenchmarkScore[]
+  productType       ProductType           // Type of product this benchmark is for
+  createdAt         DateTime              @default(now())
+  updatedAt         DateTime              @updatedAt
+  benchmarkScores   BenchmarkScore[]      @relation("GeneralBenchmarkScores")
 
   @@map("benchmarks")
 }
@@ -137,14 +138,15 @@ model Benchmark {
 model BenchmarkScore {
   id            String     @id @default(auto()) @map("_id") @db.ObjectId
   benchmarkId   String     @db.ObjectId
-  cpuId         String     @db.ObjectId
+  productId     String     @db.ObjectId        // Generic product ID field
+  productType   ProductType                    // Type of product this score belongs to
   score         Float
   createdAt     DateTime   @default(now())
   updatedAt     DateTime   @updatedAt
-  benchmark     Benchmark  @relation(fields: [benchmarkId], references: [id])
-  cpu           Cpu        @relation(fields: [cpuId], references: [id])
+  benchmark     Benchmark  @relation("GeneralBenchmarkScores", fields: [benchmarkId], references: [id])
+  cpu           Cpu?       @relation("CpuBenchmarkScores", fields: [productId], references: [id])
 
-  @@unique([cpuId, benchmarkId])
+  @@unique([productId, benchmarkId])
   @@map("benchmark_scores")
 }
 
@@ -164,4 +166,10 @@ enum PositionEnum {
   SUBSONTRUCTOR
   EMPLOYEE
   MANAGER
+}
+
+enum ProductType {
+  CPU
+  RAM
+  MOTHERBOARD
 }

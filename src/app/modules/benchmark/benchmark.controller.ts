@@ -224,7 +224,7 @@ const createBenchmarkScore = catchAsync(async (req: Request, res: Response) => {
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,
-    message: "Benchmark Score created successfully",
+    message: "Benchmark score created successfully",
     data: result,
   });
 });
@@ -235,7 +235,23 @@ const getBenchmarkScores = catchAsync(async (req: Request, res: Response) => {
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,
-    message: "Benchmark Scores retrieved successfully",
+    message: "Benchmark scores retrieved successfully",
+    data: result,
+  });
+});
+
+const updateBenchmarkScore = catchAsync(async (req: Request, res: Response) => {
+  const { productId, productType, benchmarkId, score } = req.body;
+  const result = await BenchmarkService.updateBenchmarkScore(
+    productId,
+    productType,
+    benchmarkId,
+    score
+  );
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "Benchmark score updated successfully",
     data: result,
   });
 });
@@ -247,17 +263,6 @@ const updateGpuBenchmarkScore = catchAsync(async (req: Request, res: Response) =
     statusCode: httpStatus.OK,
     success: true,
     message: "GPU Benchmark Score updated successfully",
-    data: result,
-  });
-});
-
-const updateBenchmarkScore = catchAsync(async (req: Request, res: Response) => {
-  const { cpuId, benchmarkId, score } = req.body;
-  const result = await BenchmarkService.updateBenchmarkScore(cpuId, benchmarkId, score);
-  sendResponse(res, {
-    statusCode: httpStatus.OK,
-    success: true,
-    message: "CPU Benchmark Score updated successfully",
     data: result,
   });
 });

@@ -1,4 +1,4 @@
-import { Benchmark, BenchmarkScore, Cpu, Gpu, GpuBenchmark, GpuBenchmarkScore, GpuSubBenchmark } from "@prisma/client";
+import { Benchmark, BenchmarkScore, Cpu, Gpu, GpuBenchmark, GpuBenchmarkScore, GpuSubBenchmark, ProductType } from "@prisma/client";
 
 export interface IGpuBenchmark {
   name: string;
@@ -20,10 +20,12 @@ export interface IGpuBenchmarkScore {
 export interface IBenchmark {
   name: string;
   description: string;
+  productType: ProductType;
 }
 
 export interface IBenchmarkScore {
-  cpuId: string;
+  productId: string;
+  productType: ProductType;
   benchmarkId: string;
   score: number;
 }
@@ -42,7 +44,8 @@ export interface IUpdateGpuBenchmarkScore {
 }
 
 export interface IUpdateBenchmarkScore {
-  cpuId: string;
+  productId: string;
+  productType: ProductType;
   benchmarkId: string;
   score: number;
 }
@@ -65,7 +68,7 @@ export interface IBenchmarkResponse extends Benchmark {
   benchmarkScores: BenchmarkScore[];
 }
 
-export interface IBenchmarkScoreResponse extends IBenchmarkScore {
+export interface IBenchmarkScoreResponse extends BenchmarkScore {
   benchmark: Benchmark;
-  cpu: Cpu;
+  cpu?: Cpu;
 }

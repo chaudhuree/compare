@@ -1,4 +1,4 @@
-import { Prisma } from "@prisma/client";
+import { Prisma, ProductType } from "@prisma/client";
 import prisma from "../../utils/prisma";
 import {
   IBenchmark,
@@ -202,6 +202,33 @@ const getGpuBenchmarkScores = async (gpuId: string): Promise<IGpuBenchmarkScoreR
   return result as IGpuBenchmarkScoreResponse[];
 };
 
+const updateGpuBenchmarkScore = async (
+  gpuId: string,
+  gpuSubBenchmarkId: string,
+  score: number
+): Promise<IGpuBenchmarkScoreResponse> => {
+  const result = await prisma.gpuBenchmarkScore.update({
+    where: {
+      gpuId_gpuSubBenchmarkId: {
+        gpuId,
+        gpuSubBenchmarkId,
+      },
+    },
+    data: {
+      score,
+    },
+    include: {
+      gpuSubBenchmark: {
+        include: {
+          gpuBenchmark: true,
+        },
+      },
+      gpu: true,
+    },
+  });
+  return result as IGpuBenchmarkScoreResponse;
+};
+
 // General Benchmark Services
 const createBenchmark = async (payload: IBenchmark): Promise<IBenchmarkResponse> => {
   const result = await prisma.benchmark.create({
@@ -251,7 +278,7 @@ const updateBenchmark = async (
 };
 
 const deleteBenchmark = async (id: string): Promise<IBenchmarkResponse> => {
-  // Delete all benchmark scores first
+  // First delete all benchmark scores
   await prisma.benchmarkScore.deleteMany({
     where: {
       benchmarkId: id,
@@ -271,18 +298,22 @@ const deleteBenchmark = async (id: string): Promise<IBenchmarkResponse> => {
 };
 
 // Benchmark Score Services
-const createBenchmarkScore = async (payload: IBenchmarkScore): Promise<IBenchmarkScoreResponse> => {
+const createBenchmarkScore = async (
+  payload: IBenchmarkScore
+): Promise<IBenchmarkScoreResponse> => {
   const result = await prisma.benchmarkScore.create({
     data: payload,
     include: {
       benchmark: true,
-      cpu: true,
+      cpu: payload.productType === "CPU" ? true : false,
     },
   });
   return result as IBenchmarkScoreResponse;
 };
 
-const getBenchmarkScores = async (benchmarkId: string): Promise<IBenchmarkScoreResponse[]> => {
+const getBenchmarkScores = async (
+  benchmarkId: string
+): Promise<IBenchmarkScoreResponse[]> => {
   const result = await prisma.benchmarkScore.findMany({
     where: {
       benchmarkId,
@@ -295,61 +326,25 @@ const getBenchmarkScores = async (benchmarkId: string): Promise<IBenchmarkScoreR
   return result as IBenchmarkScoreResponse[];
 };
 
-const updateGpuBenchmarkScore = async (
-  gpuId: string,
-  gpuSubBenchmarkId: string,
-  score: number
-): Promise<IGpuBenchmarkScoreResponse> => {
-  const result = await prisma.gpuBenchmarkScore.upsert({
-    where: {
-      gpuId_gpuSubBenchmarkId: {
-        gpuId,
-        gpuSubBenchmarkId,
-      },
-    },
-    update: {
-      score,
-    },
-    create: {
-      gpuId,
-      gpuSubBenchmarkId,
-      score,
-    },
-    include: {
-      gpuSubBenchmark: {
-        include: {
-          gpuBenchmark: true,
-        },
-      },
-      gpu: true,
-    },
-  });
-  return result as IGpuBenchmarkScoreResponse;
-};
-
 const updateBenchmarkScore = async (
-  cpuId: string,
+  productId: string,
+  productType: ProductType,
   benchmarkId: string,
   score: number
 ): Promise<IBenchmarkScoreResponse> => {
-  const result = await prisma.benchmarkScore.upsert({
+  const result = await prisma.benchmarkScore.update({
     where: {
-      cpuId_benchmarkId: {
-        cpuId,
+      productId_benchmarkId: {
+        productId,
         benchmarkId,
       },
     },
-    update: {
-      score,
-    },
-    create: {
-      cpuId,
-      benchmarkId,
+    data: {
       score,
     },
     include: {
       benchmark: true,
-      cpu: true,
+      cpu: productType === "CPU" ? true : false,
     },
   });
   return result as IBenchmarkScoreResponse;
@@ -362,30 +357,24 @@ export const BenchmarkService = {
   getGpuBenchmarkById,
   updateGpuBenchmark,
   deleteGpuBenchmark,
-
   // GPU Sub-Benchmark
   createGpuSubBenchmark,
   getAllGpuSubBenchmarks,
   getGpuSubBenchmarkById,
   updateGpuSubBenchmark,
   deleteGpuSubBenchmark,
-
   // GPU Benchmark Score
   createGpuBenchmarkScore,
   getGpuBenchmarkScores,
-
-  // CPU Benchmark
+  updateGpuBenchmarkScore,
+  // General Benchmark
   createBenchmark,
   getAllBenchmarks,
   getBenchmarkById,
   updateBenchmark,
   deleteBenchmark,
-
-  // Benchmark Score
+  // General Benchmark Score
   createBenchmarkScore,
   getBenchmarkScores,
-
-  // Benchmark Scores
-  updateGpuBenchmarkScore,
   updateBenchmarkScore,
 };

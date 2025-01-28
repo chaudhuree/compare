@@ -1,4 +1,4 @@
-import { Cpu } from "@prisma/client";
+import { Cpu, Prisma } from "@prisma/client";
 
 export interface ICpu {
   name: string;
@@ -10,31 +10,18 @@ export interface ICpu {
   technology: string;
   segment: string;
   generation: string;
-  cpuCoresAndBaseFrequency: Record<string, any>;
-  memory: Record<string, any>;
-  thermalManagement: Record<string, any>;
+  cpuCoresAndBaseFrequency: Prisma.JsonValue;
+  memory: Prisma.JsonValue;
+  thermalManagement: Prisma.JsonValue;
   rating?: number;
   buyingLink?: string;
 }
 
-export interface ICpuResponse {
-  name: string;
-  image: string;
-  description: string;
-  family: string;
-  cpuGroup: string;
-  architecture: string;
-  technology: string;
-  segment: string;
-  generation: string;
-  cpuCoresAndBaseFrequency: Record<string, any>;
-  memory: Record<string, any>;
-  thermalManagement: Record<string, any>;
-  rating?: number;
-  buyingLink?: string;
+export interface ICpuResponse extends Omit<Cpu, 'cpuBenchmarkScores'> {
   benchmarks: Array<{
-    benchmarkName: string;
-    benchmarkDescription: string;
+    id: string;
+    name: string;
+    description: string;
     score: number;
   }>;
 }

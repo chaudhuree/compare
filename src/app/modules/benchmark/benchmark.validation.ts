@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { ProductType } from "@prisma/client";
 
 const createGpuBenchmark = z.object({
   body: z.object({
@@ -56,6 +57,9 @@ const createBenchmark = z.object({
     description: z.string({
       required_error: "Description is required",
     }),
+    productType: z.nativeEnum(ProductType, {
+      required_error: "Product type is required",
+    }),
   }),
 });
 
@@ -63,14 +67,24 @@ const updateBenchmark = z.object({
   body: z.object({
     name: z.string().optional(),
     description: z.string().optional(),
+    productType: z.nativeEnum(ProductType).optional(),
   }),
 });
 
 const createBenchmarkScore = z.object({
   body: z.object({
-    benchmarkId: z.string(),
-    cpuId: z.string().optional(),
-    score: z.number(),
+    benchmarkId: z.string({
+      required_error: "Benchmark ID is required",
+    }),
+    productId: z.string({
+      required_error: "Product ID is required",
+    }),
+    productType: z.nativeEnum(ProductType, {
+      required_error: "Product type is required",
+    }),
+    score: z.number({
+      required_error: "Score is required",
+    }),
   }),
 });
 
@@ -90,8 +104,11 @@ const updateGpuBenchmarkScore = z.object({
 
 const updateBenchmarkScore = z.object({
   body: z.object({
-    cpuId: z.string({
-      required_error: "CPU ID is required",
+    productId: z.string({
+      required_error: "Product ID is required",
+    }),
+    productType: z.nativeEnum(ProductType, {
+      required_error: "Product type is required",
     }),
     benchmarkId: z.string({
       required_error: "Benchmark ID is required",
@@ -108,9 +125,9 @@ export const BenchmarkValidation = {
   createGpuSubBenchmark,
   updateGpuSubBenchmark,
   createGpuBenchmarkScore,
+  updateGpuBenchmarkScore,
   createBenchmark,
   updateBenchmark,
   createBenchmarkScore,
-  updateGpuBenchmarkScore,
   updateBenchmarkScore,
 };
