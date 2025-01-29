@@ -65,4 +65,4 @@
 ```
 
 ## Documentation Link
-[Postman Documentation](https://documenter.getpostman.com/view/20773865/2sAYQgh8Dm)
+[Postman Documentation](https://documenter.getpostman.com/view/41108448/2sAYQiBT4U)
